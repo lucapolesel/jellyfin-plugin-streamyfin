@@ -178,7 +178,7 @@ public class ItemAddedService : BaseEvent, IHostedService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception.");
+            _logger.LogError(ex, "Unhandled exception: {0}", ex.ToString());
         }
     }
 
