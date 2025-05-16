@@ -86,15 +86,17 @@ public class ItemAddedService : BaseEvent, IHostedService
             var episode = countdown.Episodes.First();
             var name = episode.Series.Name.Escape();
 
-            string title;
             List<string> body = [];
             var data = new Dictionary<string, object?>();
 
             _logger.LogInformation("Episode timer finished. Captured {0} episodes for {1}.", total, name);
 
+            string title = _localization.GetString("EpisodeAddedTitle");
+
+            _logger.LogInformation("Got the title: {0}", title);
+
             if (total == 1)
             {
-                title = _localization.GetString("EpisodeAddedTitle");
                 data["id"] = episode.Id; // only provide for a single episode notification
 
                 // Both episode & season information is available
@@ -130,10 +132,6 @@ public class ItemAddedService : BaseEvent, IHostedService
             }
             else
             {
-                _logger.LogInformation("Get the title.");
-
-                title = _localization.GetString("EpisodesAddedTitle");
-
                 if (episode.Season.IndexNumber != null)
                 {
                     _logger.LogInformation("Get TotalEpisodesAddedForSeason.");

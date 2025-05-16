@@ -16,7 +16,7 @@ public class LocalizationHelper
     public LocalizationHelper()
     {
         _resourceManager = new ResourceManager(
-            baseName: "Jellyfin.Plugin.Streamyfin.Resources.Strings",
+            baseName: "Jellyfin.Plugin.Streamyfin.Strings",
             assembly: typeof(LocalizationHelper).Assembly
         );
     }
@@ -28,7 +28,7 @@ public class LocalizationHelper
     /// <param name="cultureInfo"></param>
     /// <returns></returns>
     public string GetString(string key, CultureInfo? cultureInfo = null) => 
-        _resourceManager.GetString(key, cultureInfo) ?? key;
+        _resourceManager?.GetString(key, cultureInfo) ?? key;
 
     /// <summary>
     /// Get a string resource that requires string formatting
@@ -38,7 +38,7 @@ public class LocalizationHelper
     /// <param name="args"></param>
     /// <returns></returns>
     public string GetFormatted(string key, CultureInfo? cultureInfo = null, params object[] args) {
-        var resource = _resourceManager.GetString(key, cultureInfo);
+        var resource = _resourceManager?.GetString(key, cultureInfo);
         return resource == null ? key : string.Format(cultureInfo, resource, args);
     }
 }
