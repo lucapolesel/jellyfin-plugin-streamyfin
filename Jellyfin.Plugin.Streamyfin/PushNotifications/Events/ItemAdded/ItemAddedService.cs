@@ -76,90 +76,97 @@ public class ItemAddedService : BaseEvent, IHostedService
 
     private void OnEpisodeAddedTimerCallback(Guid seasonId)
     {
-        _seasonItems.TryRemove(seasonId, out var countdown);
-        var total = countdown?.Episodes.Count ?? 0;
-
-        if (countdown == null || countdown.Episodes.Count == 0) return;
-
-        var episode = countdown.Episodes.First();
-        var name = episode.Series.Name.Escape();
-
-        string title;
-        List<string> body = [];
-        var data = new Dictionary<string, object?>();
-
-        _logger.LogInformation("Episode timer finished. Captured {0} episodes for {1}.", total, name);
-
-        if (total == 1)
+        try
         {
-            title = _localization.GetString("EpisodeAddedTitle");
-            data["id"] = episode.Id; // only provide for a single episode notification
+            _seasonItems.TryRemove(seasonId, out var countdown);
+            var total = countdown?.Episodes.Count ?? 0;
 
-            // Both episode & season information is available
-            if (episode.IndexNumber != null && episode.Season.IndexNumber != null)
-            {
-                body.Add(
-                    _localization.GetFormatted(
-                        key: "EpisodeNumberAddedForSeason",
-                        args: [name, episode.IndexNumber, episode.Season.IndexNumber]
-                    )
-                );
-            }
-            // only episode information is available
-            else if (episode.IndexNumber != null)
-            {
-                body.Add(
-                    _localization.GetFormatted(
-                        key: "EpisodeAdded",
-                        args: [name, episode.IndexNumber]
-                    )
-                );
-            }
-            // only season information is available
-            else if (episode.Season.IndexNumber != null)
-            {
-                body.Add(
-                    _localization.GetFormatted(
-                        key: "EpisodeAddedForSeason",
-                        args: [name, episode.Season.IndexNumber]
-                    )
-                );
-            }
-        }
-        else
-        {
-            title = _localization.GetString("EpisodesAddedTitle");
+            if (countdown == null || countdown.Episodes.Count == 0) return;
 
-            if (episode.Season.IndexNumber != null)
+            var episode = countdown.Episodes.First();
+            var name = episode.Series.Name.Escape();
+
+            string title;
+            List<string> body = [];
+            var data = new Dictionary<string, object?>();
+
+            _logger.LogInformation("Episode timer finished. Captured {0} episodes for {1}.", total, name);
+
+            if (total == 1)
             {
-                body.Add(_localization.GetFormatted(
-                        key: "TotalEpisodesAddedForSeason",
-                        args: [name, total, episode.Season.IndexNumber]
-                    )
-                );
+                title = _localization.GetString("EpisodeAddedTitle");
+                data["id"] = episode.Id; // only provide for a single episode notification
+
+                // Both episode & season information is available
+                if (episode.IndexNumber != null && episode.Season.IndexNumber != null)
+                {
+                    body.Add(
+                        _localization.GetFormatted(
+                            key: "EpisodeNumberAddedForSeason",
+                            args: [name, episode.IndexNumber, episode.Season.IndexNumber]
+                        )
+                    );
+                }
+                // only episode information is available
+                else if (episode.IndexNumber != null)
+                {
+                    body.Add(
+                        _localization.GetFormatted(
+                            key: "EpisodeAdded",
+                            args: [name, episode.IndexNumber]
+                        )
+                    );
+                }
+                // only season information is available
+                else if (episode.Season.IndexNumber != null)
+                {
+                    body.Add(
+                        _localization.GetFormatted(
+                            key: "EpisodeAddedForSeason",
+                            args: [name, episode.Season.IndexNumber]
+                        )
+                    );
+                }
             }
             else
             {
-                body.Add(_localization.GetFormatted(
-                        key: "EpisodesAddedToSeries",
-                        args: [name, total]
-                    )
-                );
+                title = _localization.GetString("EpisodesAddedTitle");
+
+                if (episode.Season.IndexNumber != null)
+                {
+                    body.Add(_localization.GetFormatted(
+                            key: "TotalEpisodesAddedForSeason",
+                            args: [name, total, episode.Season.IndexNumber]
+                        )
+                    );
+                }
+                else
+                {
+                    body.Add(_localization.GetFormatted(
+                            key: "EpisodesAddedToSeries",
+                            args: [name, total]
+                        )
+                    );
+                }
             }
+
+            data["seasonIndex"] = episode.Season?.IndexNumber;
+            data["seriesId"] = episode.SeriesId;
+            data["type"] = episode.GetType().Name.Escape();
+
+            var notification = new ExpoNotificationRequest
+            {
+                Title = title,
+                Body = string.Join("\n", body),
+                Data = data
+            };
+
+            _notificationHelper.SendToAll(notification).ConfigureAwait(false);
         }
-
-        data["seasonIndex"] = episode.Season?.IndexNumber;
-        data["seriesId"] = episode.SeriesId;
-        data["type"] = episode.GetType().Name.Escape();
-
-        var notification = new ExpoNotificationRequest
+        catch (Exception ex)
         {
-            Title = title,
-            Body = string.Join("\n", body),
-            Data = data
-        };
-
-        _notificationHelper.SendToAll(notification).ConfigureAwait(false);
+            _logger.LogError(ex, "Unhandled exception.");
+        }
     }
 
     /// <inheritdoc />
