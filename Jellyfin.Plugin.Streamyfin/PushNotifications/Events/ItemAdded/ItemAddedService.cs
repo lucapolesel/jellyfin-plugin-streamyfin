@@ -130,10 +130,14 @@ public class ItemAddedService : BaseEvent, IHostedService
             }
             else
             {
+                _logger.LogInformation("Get the title.");
+
                 title = _localization.GetString("EpisodesAddedTitle");
 
                 if (episode.Season.IndexNumber != null)
                 {
+                    _logger.LogInformation("Get TotalEpisodesAddedForSeason.");
+
                     body.Add(_localization.GetFormatted(
                             key: "TotalEpisodesAddedForSeason",
                             args: [name, total, episode.Season.IndexNumber]
@@ -142,6 +146,8 @@ public class ItemAddedService : BaseEvent, IHostedService
                 }
                 else
                 {
+                    _logger.LogInformation("Get EpisodesAddedToSeries.");
+
                     body.Add(_localization.GetFormatted(
                             key: "EpisodesAddedToSeries",
                             args: [name, total]
@@ -150,9 +156,14 @@ public class ItemAddedService : BaseEvent, IHostedService
                 }
             }
 
+            _logger.LogInformation("Get seasonIndex.");
             data["seasonIndex"] = episode.Season?.IndexNumber;
+            _logger.LogInformation("Get seriesId.");
             data["seriesId"] = episode.SeriesId;
+            _logger.LogInformation("Get type.");
             data["type"] = episode.GetType().Name.Escape();
+
+            _logger.LogInformation("Build notification request.");
 
             var notification = new ExpoNotificationRequest
             {
@@ -160,6 +171,8 @@ public class ItemAddedService : BaseEvent, IHostedService
                 Body = string.Join("\n", body),
                 Data = data
             };
+
+            _logger.LogInformation("Send it out.");
 
             _notificationHelper.SendToAll(notification).ConfigureAwait(false);
         }
