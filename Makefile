@@ -35,6 +35,6 @@ build:
   
 push-manifest:
 	git commit -m 'new release: ${VERSION}' manifest.json Jellyfin.Plugin.Streamyfin/Jellyfin.Plugin.Streamyfin.csproj
-	git push origin main
+	git push origin ItemAddedService-Crash
 
 release: print update-version build zip create-tag create-gh-release update-manifest push-manifest
