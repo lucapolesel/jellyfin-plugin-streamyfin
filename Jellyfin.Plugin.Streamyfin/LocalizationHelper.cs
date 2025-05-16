@@ -16,7 +16,7 @@ public class LocalizationHelper
     public LocalizationHelper()
     {
         _resourceManager = new ResourceManager(
-            baseName: "Jellyfin.Plugin.Streamyfin.Strings",
+            baseName: "Jellyfin.Plugin.Streamyfin.Resources.Strings",
             assembly: typeof(LocalizationHelper).Assembly
         );
     }
